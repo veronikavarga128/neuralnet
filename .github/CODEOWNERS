@@ -1,0 +1,12 @@
+# Az alap-réteg AI-fájljait csak a szakmai vezető hagyhatja jóvá.
+# Lásd ../rules/ai-docs-ownership.md (a gyökérben).
+# GitLab-on ugyanez a fájl a repo gyökerébe vagy a .gitlab/ mappába kerül.
+# TODO: cseréld a szakmai vezető felhasználónevére.
+
+/AGENTS.md                @TODO-szakmai-vezeto
+/CLAUDE.md                @TODO-szakmai-vezeto
+/ai-context/OVERVIEW.md   @TODO-szakmai-vezeto
+/ai-agents/               @TODO-szakmai-vezeto
+/.claude/                 @TODO-szakmai-vezeto
+/.codex/                  @TODO-szakmai-vezeto
+/ralph/PROMPT_*.md        @TODO-szakmai-vezeto

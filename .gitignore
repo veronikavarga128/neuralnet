@@ -1,0 +1,26 @@
+# Környezeti változók — SOHA gitbe (kivéve a .env.example)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Build / cache / IDE
+dist/
+build/
+.cache/
+.idea/
+.vscode/
+
+# TODO: egészítsd ki a stack-edhez illő kizárásokkal
+
+# AI-eszközök személyes / helyi fájljai (a közös .claude/ és .codex/ mappa IGEN gitbe kerül)
+CLAUDE.local.md
+.claude/settings.local.json
