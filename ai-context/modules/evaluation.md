@@ -1,7 +1,7 @@
 <!--
   AI-NAK SZÁNT FÁJL — modul-doc (a _MODULE_TEMPLATE.md alapján)
-  ÁLLAPOT: RÉSZBEN KÉSZ — metrics.py implementálva, tesztekkel; evaluate.py és
-  visualize.py TERVEZETT.
+  ÁLLAPOT: RÉSZBEN KÉSZ — metrics.py és visualize.py implementálva, tesztekkel;
+  evaluate.py TERVEZETT.
 -->
 
 # evaluation — metrikák, kiértékelés, vizualizáció
@@ -18,13 +18,22 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
 | `unet_pet/metrics.py` | `confusion_matrix`, `iou_per_class`, `mean_iou`, `dice_per_class`, `mean_dice`, `pixel_accuracy`, `normalize_confusion`, `per_image_iou`, `SegmentationMeter` (akkumulál batch-enként) — KÉSZ |
 | `tests/test_metrics.py` | kézzel számolt példák (a levezetés a fájl docstringjében) |
 | `unet_pet/evaluate.py` | `evaluate(model, loader, device) -> dict`, CLI — TERVEZETT |
-| `unet_pet/visualize.py` | `show_predictions`, `overlay_mask`, `plot_confusion_matrix`, `make_tb_grid` — TERVEZETT |
+| `unet_pet/visualize.py` | `mask_to_rgb`, `overlay_mask`, `show_predictions`, `make_tb_grid`, `plot_confusion_matrix`, `plot_history`, `CLASS_COLORS` — KÉSZ |
+| `tests/test_visualize.py` | ábra-tesztek hamis adaton (Agg backend a `tests/conftest.py`-ban) |
 
 ## Belépési pontok
 
 - `evaluate(model, loader, device)` → `{"mIoU", "dice", "pixel_acc", "iou_per_class", "confusion_matrix", "per_image_iou"}`
 - CLI: `python -m unet_pet.evaluate --weights models/unet_pet_best.pt [--split test]`
-- `show_predictions(images, masks, preds, n=6)` → matplotlib ábra
+- `show_predictions(images, masks, preds=None, *, mean, std, n=6, titles=None)` → `Figure`;
+  soronként kép | valódi maszk | predikció | overlay (preds nélkül: kép | maszk | overlay).
+  `titles` a sor bal oldalára (pl. név + képenkénti IoU a legjobb/legrosszabb képekhez).
+- `make_tb_grid(images, masks, preds, *, mean, std, n=4)` → `(3, H', W')` tenzor a
+  `SummaryWriter.add_image`-hez, ugyanazzal a 4 oszloppal
+- `plot_confusion_matrix(cm, normalize=True)` → `Figure` (soronként normalizált, cellákban a számok)
+- `plot_history(history)` → `Figure`; a history **epochonkénti listák dictje**: `train_loss`,
+  `val_loss`, `val_mIoU`, `val_dice`, `lr` (a hiányzó kulcsokat kihagyja) — a `train.py`
+  ezt a formátumot írja
 
 ## metrics.py — konvenciók
 
@@ -38,6 +47,13 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
 - `normalize_confusion`: soronként normalizál (recall-nézet), üres sor → 0, nem NaN.
 - Baseline („mindig háttér”) a `sample_data/`-n: pixel acc 0,659, mIoU 0,220 → ezért a
   pixel accuracy félrevezető, a fő metrika a mIoU.
+
+## visualize.py — konvenciók
+
+- A képbemenet mindig a **normalizált** modellbemenet; a függvények `mean`/`std`
+  alapján denormalizálnak. Predikció lehet logit `(B,C,H,W)` vagy címke `(B,H,W)`.
+- Színek (`CLASS_COLORS`): kisállat narancs, háttér sötétszürke, határ sárga. Az overlay
+  a háttérpixeleket érintetlenül hagyja.
 
 ## Mit kell kiértékelni (beadandó-követelmény)
 

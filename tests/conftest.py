@@ -1,6 +1,10 @@
 """Shared pytest configuration."""
 
+import matplotlib
 import pytest
+
+# Headless plotting: tests must not open windows or need a display.
+matplotlib.use("Agg")
 
 
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
