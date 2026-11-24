@@ -56,6 +56,7 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | `model.in_channels` | 3 | RGB |
 | `model.base_channels` | 32 | |
 | `model.depth` | 4 | |
+| `model.bilinear` | false | decoder: ConvTranspose2d (false) vagy bilineáris + 1×1 conv (true) |
 | `model.num_classes` | 3 | |
 | `train.epochs` | 25 | |
 | `train.batch_size` | 16 | |

@@ -39,6 +39,7 @@ class ModelConfig:
     num_classes: int
     base_channels: int
     depth: int
+    bilinear: bool
 
 
 @dataclass
