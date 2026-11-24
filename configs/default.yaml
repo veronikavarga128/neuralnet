@@ -25,11 +25,16 @@ train:
   batch_size: 16
   lr: 1.0e-3                 # Adam
   weight_decay: 1.0e-4
-  scheduler: reduce_on_plateau  # driven by validation mIoU
+  scheduler: reduce_on_plateau  # driven by validation mIoU (or: none)
+  scheduler_factor: 0.5      # LR is multiplied by this when val mIoU stops improving...
+  scheduler_patience: 3      # ...for this many epochs
   dice_weight: 1.0           # loss = CrossEntropy + dice_weight * Dice
-  log_images_every: 1        # epochs between TensorBoard prediction images
+  log_images_every: 1        # epochs between TensorBoard prediction images (0 = never)
+  num_log_images: 4          # validation images in the TensorBoard grid
+  amp: true                  # mixed precision; only takes effect on CUDA
 
 paths:
   runs: runs
   checkpoints: checkpoints
   best_weights: models/unet_pet_best.pt
+  history: models/unet_pet_history.json  # per-epoch curves, committed with the weights

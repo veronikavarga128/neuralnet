@@ -49,8 +49,12 @@ class TrainConfig:
     lr: float
     weight_decay: float
     scheduler: str
+    scheduler_factor: float
+    scheduler_patience: int
     dice_weight: float
     log_images_every: int
+    num_log_images: int
+    amp: bool
 
 
 @dataclass
@@ -58,6 +62,7 @@ class PathsConfig:
     runs: Path
     checkpoints: Path
     best_weights: Path
+    history: Path
 
 
 @dataclass
@@ -96,6 +101,9 @@ class Config:
             (t.dice_weight >= 0, "train.dice_weight must be >= 0"),
             (t.scheduler in SCHEDULERS, f"train.scheduler must be one of {SCHEDULERS}"),
             (t.log_images_every >= 0, "train.log_images_every must be >= 0"),
+            (0 < t.scheduler_factor < 1, "train.scheduler_factor must be in (0, 1)"),
+            (t.scheduler_patience >= 0, "train.scheduler_patience must be >= 0"),
+            (t.num_log_images >= 0, "train.num_log_images must be >= 0"),
         ]
         errors = [msg for ok, msg in checks if not ok]
         if errors:

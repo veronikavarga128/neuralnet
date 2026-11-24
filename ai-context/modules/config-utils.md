@@ -62,12 +62,17 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | `train.batch_size` | 16 | |
 | `train.lr` | 1e-3 | Adam |
 | `train.weight_decay` | 1e-4 | |
-| `train.scheduler` | `reduce_on_plateau` | val mIoU alapján |
+| `train.scheduler` | `reduce_on_plateau` | val mIoU alapján (vagy `none`) |
+| `train.scheduler_factor` | 0.5 | LR-szorzó platón |
+| `train.scheduler_patience` | 3 | ennyi javulás nélküli epoch után |
 | `train.dice_weight` | 1.0 | loss = CE + w·Dice |
-| `train.log_images_every` | 1 | epoch |
+| `train.log_images_every` | 1 | epoch (0 = soha) |
+| `train.num_log_images` | 4 | képek a TensorBoard-rácsban |
+| `train.amp` | true | mixed precision, csak CUDA-n hat |
 | `paths.runs` | `runs` | |
 | `paths.checkpoints` | `checkpoints` | |
 | `paths.best_weights` | `models/unet_pet_best.pt` | |
+| `paths.history` | `models/unet_pet_history.json` | görbék a notebookhoz, gitbe kerül |
 
 ## Függőségek
 

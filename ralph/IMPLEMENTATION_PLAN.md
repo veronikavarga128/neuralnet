@@ -12,7 +12,7 @@
 - [x] `metrics.py`: konfúziós mátrix alapú IoU/mIoU/Dice/pixel acc., `SegmentationMeter` (spec: 05, modul: evaluation) — kész, ha a kézzel számolt tesztek zöldek
 - [x] `losses.py`: `DiceLoss`, `CombinedLoss` (spec: 04, modul: training) — kész, ha a loss-tesztek zöldek (tökéletes predikció ≈ 0 Dice loss)
 - [x] `visualize.py`: `denormalize`-ra épülő ábrák, overlay, TensorBoard képrács, konfúziós mátrix ábra (spec: 05, modul: evaluation) — kész, ha a függvények hamis adaton hiba nélkül ábrát adnak
-- [ ] `train.py`: `train_one_epoch`, `validate`, `fit`, checkpoint, history JSON, TensorBoard, CLI (spec: 04, modul: training) — kész, ha a smoke-teszt (1 epoch, 2 batch, tmp mappa) zöld
+- [x] `train.py`: `train_one_epoch`, `validate`, `fit`, checkpoint, history JSON, TensorBoard, CLI (spec: 04, modul: training) — kész, ha a smoke-teszt (1 epoch, 2 batch, tmp mappa) zöld
 - [ ] `evaluate.py`: teszt kiértékelés, baseline, legjobb/legrosszabb képek, JSON mentés, CLI (spec: 05, modul: evaluation) — kész, ha a CLI hamis súllyal `--limit 2` mellett lefut
 - [ ] EMBERI LÉPÉS (nem RALPH): teljes tanítás GPU-n / Colabon, `models/unet_pet_best.pt` és a TensorBoard eredmények mentése; 1-2 összehasonlító kísérlet (pl. csak CE vs. CE+Dice)
 - [ ] Notebook: `unet_pet_segmentation.ipynb` a `ai-context/modules/notebook.md` szerkezetével, `TRAIN = False` alapértékkel, magyar magyarázatokkal (spec: 06, modul: notebook) — kész, ha `nbconvert --execute` hibamentes
