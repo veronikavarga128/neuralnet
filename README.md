@@ -1,10 +1,10 @@
 # neuralnet — Kisállat-szegmentálás U-Nettel (Oxford-IIIT Pet)
 
-Féléves projekt a **Neurális hálók** tárgyhoz (Széchenyi István Egyetem, MSc).
+Féléves projekt a **Neurális hálók** tárgyhoz.
 Egy nulláról épített **U-Net** háló pixelenként szétválasztja a fotókon a
 kisállatot, a hátteret és a körvonalat (3 osztályos szemantikus szegmentálás).
 
-> ⚠️ A projekt fejlesztés alatt áll. A lenti parancsok és fájlok a **tervezett**
+> A projekt fejlesztés alatt áll. A lenti parancsok és fájlok a **tervezett**
 > állapotot írják le; amelyik még nem létezik, azt a fejlesztés során hozzuk létre.
 
 ## Gyors áttekintés

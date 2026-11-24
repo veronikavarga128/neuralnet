@@ -1,0 +1,32 @@
+# Default configuration for U-Net training on Oxford-IIIT Pet.
+# Every hyperparameter and path lives here; paths are relative to the repo root.
+
+seed: 42
+
+data:
+  root: data                 # torchvision download location
+  img_size: 128              # images and masks are resized to img_size x img_size
+  val_fraction: 0.15         # fraction of the official `trainval` split used for validation
+  num_workers: 0             # 0 is the safe default on Windows / in notebooks
+  mean: [0.485, 0.456, 0.406]  # ImageNet statistics for input normalisation
+  std: [0.229, 0.224, 0.225]
+
+model:
+  in_channels: 3
+  num_classes: 3             # 0 = pet, 1 = background, 2 = border
+  base_channels: 32
+  depth: 4
+
+train:
+  epochs: 25
+  batch_size: 16
+  lr: 1.0e-3                 # Adam
+  weight_decay: 1.0e-4
+  scheduler: reduce_on_plateau  # driven by validation mIoU
+  dice_weight: 1.0           # loss = CrossEntropy + dice_weight * Dice
+  log_images_every: 1        # epochs between TensorBoard prediction images
+
+paths:
+  runs: runs
+  checkpoints: checkpoints
+  best_weights: models/unet_pet_best.pt

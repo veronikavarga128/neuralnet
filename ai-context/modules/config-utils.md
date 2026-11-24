@@ -34,6 +34,9 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | `data.img_size` | 128 | |
 | `data.val_fraction` | 0.15 | a `trainval` splitből |
 | `data.num_workers` | 0 | Windows / notebook miatt |
+| `data.mean` | `[0.485, 0.456, 0.406]` | ImageNet-normalizálás |
+| `data.std` | `[0.229, 0.224, 0.225]` | ImageNet-normalizálás |
+| `model.in_channels` | 3 | RGB |
 | `model.base_channels` | 32 | |
 | `model.depth` | 4 | |
 | `model.num_classes` | 3 | |

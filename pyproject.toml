@@ -1,0 +1,17 @@
+[project]
+name = "unet-pet"
+version = "0.1.0"
+description = "U-Net semantic segmentation on the Oxford-IIIT Pet dataset (PyTorch)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["data", "runs", "checkpoints"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
