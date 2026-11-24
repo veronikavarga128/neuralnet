@@ -1,7 +1,6 @@
 <!--
   AI-NAK SZÁNT FÁJL — modul-doc (a _MODULE_TEMPLATE.md alapján)
-  ÁLLAPOT: RÉSZBEN KÉSZ — data.py implementálva, tesztekkel. A sample_data/ és a
-  load_sample_data a következő tervtételben készül.
+  ÁLLAPOT: KÉSZ — data.py és sample_data/ implementálva, tesztekkel.
 -->
 
 # data — adathalmaz, transzformációk, split
@@ -16,9 +15,10 @@ seedelt train/val felosztás és DataLoaderek.
 
 | Fájl | Szerep |
 |------|--------|
-| `unet_pet/data.py` | `JointTransform`, `build_transform`, `trimap_to_labels`, `PetSegmentationDataset`, `split_indices`, `load_base_datasets`, `make_datasets`, `make_dataloaders`, `denormalize`, `class_pixel_fractions`, `CLASS_NAMES` |
+| `unet_pet/data.py` | `JointTransform`, `build_transform`, `trimap_to_labels`, `PetSegmentationDataset`, `split_indices`, `load_base_datasets`, `make_datasets`, `make_dataloaders`, `denormalize`, `class_pixel_fractions`, `CLASS_NAMES`, `SampleFolder`, `load_sample_data`, `export_sample_data`, CLI `main` |
 | `tests/test_data.py` | tesztek hamis alapdatasettel (`FakePetBase`), letöltés nélkül |
-| `sample_data/images/*.jpg`, `sample_data/masks/*.png` | kis mintakészlet (TERVEZETT) |
+| `tests/test_sample_data.py` | a `sample_data/` mappa és betöltőjének tesztjei |
+| `sample_data/images/*.jpg`, `sample_data/masks/*.png` | 8 minta (4 macska, 4 kutya, ~100 KB), gitben |
 
 ## Belépési pontok
 
@@ -28,7 +28,10 @@ seedelt train/val felosztás és DataLoaderek.
 - `make_datasets(cfg, trainval_base, test_base)` — ugyanez DataLoader nélkül
 - `denormalize(img, mean, std)` — vizualizációhoz, `[0,1]`-re vágva
 - `class_pixel_fractions(dataset, max_items=None)` — osztályonkénti pixelarány (notebook)
-- `load_sample_data(path, img_size)` — TERVEZETT, a `sample_data/` offline betöltése
+- `load_sample_data(cfg, root="sample_data") -> (images, masks, names)` — offline demó;
+  ugyanaz az eval-transzformáció, mint a val/testnél
+- `python -m unet_pet.data --export-sample` — a `sample_data/` újragenerálása a letöltött
+  datasetből (determinisztikus, a `cfg.seed`-del)
 
 ## Felépítés, döntések
 
@@ -45,6 +48,11 @@ seedelt train/val felosztás és DataLoaderek.
 - Train DataLoader: `shuffle`, seedelt `generator`, `worker_init_fn=seed_worker`,
   `drop_last` (az 1-es méretű utolsó batch elrontaná a BatchNormot).
 - Augmentáció erőssége konfigból: `data.hflip_prob`, `data.color_jitter`.
+- `sample_data/`: a hivatalos **test** splitből (a modell tanításkor nem látja → becsületes
+  demó), seedelve 4 macska + 4 kutya, mind különböző fajta. Képek max. 256 px (JPEG q85),
+  maszkok NEAREST-tel, **nyers trimap** értékekkel `{1,2,3}` (PNG) — így ugyanaz a
+  `trimap_to_labels` útvonal fut rajtuk, mint a valódi adaton. A fájlnév = eredeti név
+  (a fajta a prefix; macskafajta nagybetűs, kutyafajta kisbetűs).
 
 ## Adat-specifikáció
 
