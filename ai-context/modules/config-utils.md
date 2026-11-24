@@ -16,7 +16,7 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 |------|--------|
 | `configs/default.yaml` | az összes hiperparaméter és útvonal |
 | `unet_pet/config.py` | `Config` (+ `DataConfig`, `ModelConfig`, `TrainConfig`, `PathsConfig`), `load_config(path, overrides=None)`, `Config.to_dict()` |
-| `unet_pet/utils.py` | `project_root()`, `resolve_path(p)`, `set_seed(seed)`, `seed_worker`, `make_generator(seed)`, `get_device(preferred=None)` |
+| `unet_pet/utils.py` | `project_root()`, `resolve_path(p)`, `set_seed(seed)`, `seed_worker`, `make_generator(seed)`, `get_device(preferred=None)`, CLI-segédek: `parse_overrides` (`--set KEY=VALUE` → dict), `positive_int` (argparse típus) — a `train` és az `evaluate` CLI közösen használja |
 | `tests/test_config.py`, `tests/test_utils.py` | tesztek |
 
 ## Belépési pontok
@@ -73,6 +73,7 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | `paths.checkpoints` | `checkpoints` | |
 | `paths.best_weights` | `models/unet_pet_best.pt` | |
 | `paths.history` | `models/unet_pet_history.json` | görbék a notebookhoz, gitbe kerül |
+| `paths.results` | `results` | kiértékelés: `<split>_metrics.json` (gitbe kerül), ábrák (PNG, nem kerül gitbe) |
 
 ## Függőségek
 

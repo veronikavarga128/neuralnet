@@ -13,8 +13,8 @@
 - [x] `losses.py`: `DiceLoss`, `CombinedLoss` (spec: 04, modul: training) — kész, ha a loss-tesztek zöldek (tökéletes predikció ≈ 0 Dice loss)
 - [x] `visualize.py`: `denormalize`-ra épülő ábrák, overlay, TensorBoard képrács, konfúziós mátrix ábra (spec: 05, modul: evaluation) — kész, ha a függvények hamis adaton hiba nélkül ábrát adnak
 - [x] `train.py`: `train_one_epoch`, `validate`, `fit`, checkpoint, history JSON, TensorBoard, CLI (spec: 04, modul: training) — kész, ha a smoke-teszt (1 epoch, 2 batch, tmp mappa) zöld
-- [ ] `evaluate.py`: teszt kiértékelés, baseline, legjobb/legrosszabb képek, JSON mentés, CLI (spec: 05, modul: evaluation) — kész, ha a CLI hamis súllyal `--limit 2` mellett lefut
-- [ ] EMBERI LÉPÉS (nem RALPH): teljes tanítás GPU-n / Colabon, `models/unet_pet_best.pt` és a TensorBoard eredmények mentése; 1-2 összehasonlító kísérlet (pl. csak CE vs. CE+Dice)
+- [x] `evaluate.py`: teszt kiértékelés, baseline, legjobb/legrosszabb képek, JSON mentés, CLI (spec: 05, modul: evaluation) — kész, ha a CLI hamis súllyal `--limit 2` mellett lefut
+- [ ] EMBERI LÉPÉS (nem RALPH) — RÉSZBEN KÉSZ: fő futás (CE+Dice, 25 epoch, CPU, val mIoU 0,7264) exportálva; hátra: CE-only összehasonlítás. Eredeti szöveg: teljes tanítás GPU-n / Colabon, `models/unet_pet_best.pt` és a TensorBoard eredmények mentése; 1-2 összehasonlító kísérlet (pl. csak CE vs. CE+Dice)
 - [ ] Notebook: `unet_pet_segmentation.ipynb` a `ai-context/modules/notebook.md` szerkezetével, `TRAIN = False` alapértékkel, magyar magyarázatokkal (spec: 06, modul: notebook) — kész, ha `nbconvert --execute` hibamentes
 - [ ] README: leírás, dataset link, telepítés, futtatás, eredménytábla, mappaszerkezet (spec: 06) — kész, ha minden parancs a README-ből bemásolva működik
 - [ ] Beadás előtti ellenőrzés: friss venv-ben telepítés + notebook futtatás, internet nélküli futás, fájlméretek, nincs TODO a notebookban (spec: 06) — kész, ha a spec összes elfogadási kritériuma teljesül

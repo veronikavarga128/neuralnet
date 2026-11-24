@@ -63,6 +63,7 @@ class PathsConfig:
     checkpoints: Path
     best_weights: Path
     history: Path
+    results: Path
 
 
 @dataclass

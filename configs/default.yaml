@@ -38,3 +38,4 @@ paths:
   checkpoints: checkpoints
   best_weights: models/unet_pet_best.pt
   history: models/unet_pet_history.json  # per-epoch curves, committed with the weights
+  results: results           # evaluation outputs: <split>_metrics.json (committed), figures

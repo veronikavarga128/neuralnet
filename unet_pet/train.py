@@ -40,7 +40,7 @@ from unet_pet.data import CLASS_NAMES, make_dataloaders
 from unet_pet.losses import CombinedLoss, build_loss
 from unet_pet.metrics import SegmentationMeter
 from unet_pet.model import build_model, count_parameters
-from unet_pet.utils import get_device, resolve_path, set_seed
+from unet_pet.utils import get_device, parse_overrides, positive_int, resolve_path, set_seed
 from unet_pet.visualize import make_tb_grid
 
 HISTORY_KEYS = (
@@ -402,30 +402,13 @@ def fit(
     return {**result, "history": history, "best_val_mIoU": best_miou, "best_epoch": best_epoch}
 
 
-def _parse_overrides(pairs: Sequence[str]) -> dict[str, str]:
-    overrides = {}
-    for pair in pairs:
-        key, sep, value = pair.partition("=")
-        if not sep:
-            raise argparse.ArgumentTypeError(f"--set expects key=value, got '{pair}'")
-        overrides[key.strip()] = value.strip()
-    return overrides
-
-
-def _positive_int(text: str) -> int:
-    value = int(text)
-    if value < 1:
-        raise argparse.ArgumentTypeError("must be >= 1")
-    return value
-
-
 def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     """CLI entry point (``python -m unet_pet.train``)."""
     parser = argparse.ArgumentParser(description="Train the U-Net on Oxford-IIIT Pet.")
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, help="YAML config file")
     parser.add_argument("--epochs", type=int, help="override train.epochs")
     parser.add_argument(
-        "--limit-batches", type=_positive_int, help="batches per epoch (quick check; no export)"
+        "--limit-batches", type=positive_int, help="batches per epoch (quick check; no export)"
     )
     parser.add_argument("--run-name", default="", help="suffix of the run directory")
     parser.add_argument("--resume", help="continue from a checkpoints/<run>/last.pt file")
@@ -440,7 +423,7 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
     )
     args = parser.parse_args(argv)
 
-    overrides: dict[str, Any] = _parse_overrides(args.set)
+    overrides: dict[str, Any] = parse_overrides(args.set)
     if args.epochs is not None:
         overrides["train.epochs"] = args.epochs
     cfg = load_config(args.config, overrides=overrides)

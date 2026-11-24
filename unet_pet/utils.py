@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import random
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -77,3 +79,22 @@ def get_device(preferred: str | None = None) -> torch.device:
     if mps is not None and mps.is_available():
         return torch.device("mps")
     return torch.device("cpu")
+
+
+def parse_overrides(pairs: Sequence[str]) -> dict[str, str]:
+    """``["train.lr=0.01", ...]`` (CLI ``--set`` values) -> ``{"train.lr": "0.01", ...}``."""
+    overrides = {}
+    for pair in pairs:
+        key, sep, value = pair.partition("=")
+        if not sep:
+            raise argparse.ArgumentTypeError(f"--set expects key=value, got '{pair}'")
+        overrides[key.strip()] = value.strip()
+    return overrides
+
+
+def positive_int(text: str) -> int:
+    """``argparse`` type for options that must be >= 1."""
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be >= 1")
+    return value
