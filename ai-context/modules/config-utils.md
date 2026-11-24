@@ -1,7 +1,6 @@
 <!--
   AI-NAK SZÁNT FÁJL — modul-doc (a _MODULE_TEMPLATE.md alapján)
-  ÁLLAPOT: TERVEZETT — a kód még nem létezik. Amikor elkészül, a doc-keeper
-  ügynök frissíti a valós fájlnevekre és függvényekre.
+  ÁLLAPOT: KÉSZ — a config.py és a utils.py implementálva, tesztekkel.
 -->
 
 # config-utils — konfiguráció, seed, eszköz
@@ -16,14 +15,30 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | Fájl | Szerep |
 |------|--------|
 | `configs/default.yaml` | az összes hiperparaméter és útvonal |
-| `unet_pet/config.py` | `Config` dataclass, `load_config(path, overrides=None)` |
-| `unet_pet/utils.py` | `set_seed(seed)`, `get_device()`, `project_root()`, `seed_worker` |
+| `unet_pet/config.py` | `Config` (+ `DataConfig`, `ModelConfig`, `TrainConfig`, `PathsConfig`), `load_config(path, overrides=None)`, `Config.to_dict()` |
+| `unet_pet/utils.py` | `project_root()`, `resolve_path(p)`, `set_seed(seed)`, `seed_worker`, `make_generator(seed)`, `get_device(preferred=None)` |
+| `tests/test_config.py`, `tests/test_utils.py` | tesztek |
 
 ## Belépési pontok
 
-- `load_config("configs/default.yaml")` → `Config`
+- `load_config()` → `Config` (alapból `configs/default.yaml`; relatív út a repo gyökeréhez képest)
+- `load_config(overrides={"train.epochs": "1"})` — pontozott kulcsos felülírás; a CLI-ből
+  jövő szöveget a mező típusára konvertálja (`"5e-4"` → `float`)
+- `cfg.to_dict()` — sima dict (útvonalak stringként), TensorBoard hparams / JSON mentéshez
 - `set_seed(cfg.seed)` — a notebook és a `train.py` legelején
-- `get_device()` → `torch.device`
+- DataLoader: `generator=make_generator(cfg.seed), worker_init_fn=seed_worker`
+- split: `random_split(..., generator=make_generator(cfg.seed))`
+- `get_device()` → `torch.device` (cuda → mps → cpu); `get_device("cpu")` kényszerít
+
+## Viselkedés, döntések
+
+- A dataclass-mezőknek **nincs alapértéke**: a YAML az egyetlen forrás. Hiányzó vagy
+  ismeretlen (elgépelt) kulcs → `KeyError`, rossz típus / tartomány → `ValueError`.
+- Validáció: `val_fraction ∈ (0,1)`, `img_size` osztható `2**depth`-szel,
+  `len(mean) == len(std) == in_channels`, `scheduler ∈ {reduce_on_plateau, none}` stb.
+- A `Path` mezők betöltéskor abszolút útra oldódnak a repo gyökeréhez képest.
+- `set_seed` nem hívja a `torch.use_deterministic_algorithms(True)`-t, mert egyes CUDA
+  műveleteknek (pl. 2D cross-entropy backward) nincs determinisztikus változata.
 
 ## Konfig-kulcsok (tervezett alapértékek)
 

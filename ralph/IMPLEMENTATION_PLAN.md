@@ -5,7 +5,7 @@
 # IMPLEMENTATION_PLAN
 
 - [x] Projekt-váz: `unet_pet/` csomag üres modulokkal, `tests/`, `configs/default.yaml`, `pyproject.toml` (ruff + pytest), `requirements.txt` és `requirements-dev.txt` pontos verziókkal, kiegészített `.gitignore` (spec: 01, 06) — kész, ha `pytest -q` (0 teszt is OK) és `ruff check .` lefut
-- [ ] `config.py` + `utils.py`: `load_config`, `set_seed`, `seed_worker`, `get_device` (spec: 01, modul: config-utils) — kész, ha a seed- és konfig-tesztek zöldek
+- [x] `config.py` + `utils.py`: `load_config`, `set_seed`, `seed_worker`, `get_device` (spec: 01, modul: config-utils) — kész, ha a seed- és konfig-tesztek zöldek
 - [ ] `data.py`: dataset wrapper, szinkron transzformációk, címke-leképezés, seedelt split, `make_dataloaders` (spec: 02, modul: data) — kész, ha a letöltés nélküli adat-tesztek zöldek
 - [ ] `sample_data/`: 6-8 kép + maszk kiválasztása a datasetből és `load_sample_data` (spec: 02) — kész, ha < 2 MB és a betöltő teszt zöld
 - [ ] `model.py`: `DoubleConv`, `Down`, `Up`, `UNet`, `count_parameters` (spec: 03, modul: model) — kész, ha az alak- és overfit-tesztek zöldek
