@@ -1,10 +1,9 @@
-<!-- AI-NAK SZÁNT FÁJL — a service ügynök-mappája -->
+<!-- AI-NAK SZÁNT FÁJL — a projekt ügynök-mappája -->
 
-# ai-agents/ — projekt_git_repo_1 ügynökei
+# ai-agents/ — neuralnet ügynökei
 
-Ez a mappa a **service saját ügynök-csapata**. Minden repónak (pl. FE és BE)
-saját `ai-agents/` mappája van, mert a jó reviewer vagy tesztíró
-**stack-függő**.
+Ez a mappa a projekt **saját ügynök-csapata**, PyTorch / ML projektre hangolva
+(a jó reviewer vagy tesztíró **stack-függő**).
 
 ## Ugyanaz a minta, mint a CLAUDE.md → AGENTS.md
 
@@ -37,7 +36,10 @@ akkor, ha a név, leírás vagy eszközkészlet változik.
 
 1. Írd meg az `ai-agents/<szerep>.md`-t (a meglévők szerkezetével).
 2. Másold az egyik adapter-párt, és írd át a nevet és a leírást.
-3. Vedd fel a fenti táblába és a service `AGENTS.md` „Ügynökök” részébe.
+3. Vedd fel a fenti táblába és az `AGENTS.md` „Ügynökök” részébe.
 
-Az ügynök-mappa az **alap-réteg** része: a szakmai vezető tartja karban
-(lásd `../rules/ai-docs-ownership.md`).
+Az ügynök-mappa az **alap-réteg** része: a project owner tartja karban
+(lásd `AGENTS.md` → „AI-fájlok karbantartása”).
+
+> A `.codex/agents/` adapterek ebben a repóban nincsenek meg; csak akkor kellenek,
+> ha Codexet is használsz.

@@ -1,6 +1,6 @@
-<!-- AI-NAK ÉS EMBERNEK — RALPH ciklus ehhez a service-hez -->
+<!-- AI-NAK ÉS EMBERNEK — RALPH ciklus ehhez a projekthez -->
 
-# ralph/ — autonóm fejlesztési ciklus (projekt_git_repo_1)
+# ralph/ — autonóm fejlesztési ciklus (neuralnet)
 
 A RALPH (Geoffrey Huntley technikája) egy **egyszerű ciklus**: ugyanazt a
 promptot adja újra és újra az ügynöknek, **minden körben friss kontextussal**.
@@ -14,16 +14,16 @@ while :; do cat PROMPT.md | claude -p ; done      # a lényeg egy sorban
 
 | Fájl | Szerep | Ki írja |
 |------|--------|---------|
-| `specs/*.md` | A követelmények: egy fájl egy téma | ember (szakmai vezető / fejlesztő) |
-| `PROMPT_plan.md` | PLAN mód: hiányelemzés, terv írása, kód nélkül | szakmai vezető (alap-réteg) |
-| `PROMPT_build.md` | BUILD mód: egy feladat körönként | szakmai vezető (alap-réteg) |
+| `specs/*.md` | A követelmények: egy fájl egy téma | ember |
+| `PROMPT_plan.md` | PLAN mód: hiányelemzés, terv írása, kód nélkül | ember (alap-réteg) |
+| `PROMPT_build.md` | BUILD mód: egy feladat körönként | ember (alap-réteg) |
 | `IMPLEMENTATION_PLAN.md` | A kör-közi állapot: priorizált `- [ ]` lista | az ügynök (napló-réteg) |
 | `loop.sh` | A ciklus (Claude vagy Codex) | — |
 
 ## Futtatás
 
 ```bash
-git switch -c ralph/YYYYMMDD-projekt_git_repo_1-<téma>     # SOHA ne main-en
+git switch -c ralph/YYYYMMDD-<téma>     # SOHA ne main-en
 ./ralph/loop.sh plan 3                      # terv elkészítése (max 3 kör)
 # → nézd át és javítsd kézzel az IMPLEMENTATION_PLAN.md-t!
 ./ralph/loop.sh build 20                    # építés (max 20 kör)
@@ -35,6 +35,14 @@ AGENT=codex ./ralph/loop.sh build 20        # ugyanez Codexszel
 A ciklust a **tesztek, a lint és a típusellenőrzés** tartják kordában. Ha
 nincs gyors, megbízható teszt (`AGENTS.md` → Parancsok), a RALPH gyorsan
 gyártott hulladékot termel. Előbb legyen tesztparancs, utána ciklus.
+
+## Ebben a projektben
+
+- A specek: [`specs/`](specs/) (01–06), a kezdő terv: [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md).
+- Backpressure: `pytest -q` és `ruff check .` (lásd `AGENTS.md` → Parancsok).
+- A teljes tanítás **nem** a ciklus része (lassú, GPU kell): ez `EMBERI LÉPÉS`.
+- Tanulási célból ajánlott először **interaktívan** (VS Code + Claude Code)
+  végigmenni pár tételen, és csak utána kipróbálni a ciklust.
 
 ## Biztonság
 

@@ -3,7 +3,7 @@
 Tervezési módban vagy. **Kódot nem írsz.** Egyetlen kimeneted a
 `ralph/IMPLEMENTATION_PLAN.md` frissítése.
 
-0. Olvasd el: `../AGENTS.md` (ha létezik), `AGENTS.md`, `ai-context/OVERVIEW.md`,
+0. Olvasd el: `AGENTS.md`, `ai-context/OVERVIEW.md`,
    minden `ralph/specs/*.md`, és a jelenlegi `ralph/IMPLEMENTATION_PLAN.md`.
 1. Vesd össze a specifikációkat a meglévő kóddal (hiányelemzés). Ne feltételezd,
    hogy valami hiányzik — keress rá a kódban. A kereséshez használhatsz

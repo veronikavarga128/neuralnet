@@ -40,5 +40,5 @@
 
 <!--
 KARBANTARTÁS: ha ezt a modult módosítod a kódban, frissítsd ezt a docot
-UGYANABBAN a commitban (lásd ../../../rules/commit-policy.md).
+UGYANABBAN a commitban (lásd AGENTS.md → Git és commit).
 -->

@@ -8,19 +8,34 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+.pytest_cache/
+.ruff_cache/
 
-# Node
-node_modules/
+# Jupyter
+.ipynb_checkpoints/
 
-# Build / cache / IDE
+# Adat, logok, köztes modellek — NEM kerülnek gitbe
+data/
+runs/
+checkpoints/
+results/*.png
+*.pt
+*.pth
+# ...kivéve a végső, beadandó súlyfájl:
+!models/unet_pet_best.pt
+
+# Beadandó zip
+*.zip
+
+# Build / cache / IDE / OS
 dist/
 build/
 .cache/
 .idea/
 .vscode/
+.DS_Store
+Thumbs.db
 
-# TODO: egészítsd ki a stack-edhez illő kizárásokkal
-
-# AI-eszközök személyes / helyi fájljai (a közös .claude/ és .codex/ mappa IGEN gitbe kerül)
+# AI-eszközök személyes / helyi fájljai (a közös .claude/ mappa IGEN gitbe kerül)
 CLAUDE.local.md
 .claude/settings.local.json

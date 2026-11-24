@@ -10,7 +10,7 @@ MODE="${1:-build}"
 MAX="${2:-10}"
 AGENT="${AGENT:-claude}"
 
-cd "$(dirname "$0")/.."                       # a service-repo gyökere
+cd "$(dirname "$0")/.."                       # a repo gyökere
 PROMPT="ralph/PROMPT_${MODE}.md"
 PLAN="ralph/IMPLEMENTATION_PLAN.md"
 [[ -f "$PROMPT" ]] || { echo "Nincs ilyen prompt: $PROMPT"; exit 1; }
@@ -20,9 +20,10 @@ if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
   echo "Main/master branch-en nem futtatom. Előbb: git switch -c ralph/<téma>"; exit 1
 fi
 
-# TODO: a tesztparancsot is engedélyezd (pl. "Bash(pytest:*)" vagy "Bash(npm test:*)")
-CLAUDE_FLAGS="${CLAUDE_FLAGS:---permission-mode acceptEdits --allowedTools Bash(git:*)}"
-CODEX_FLAGS="${CODEX_FLAGS:-}"                # TODO: sandbox / approval beállítás
+# Engedélyezett parancsok: git, pytest, ruff, python (tesztek, smoke-tanítás).
+# A mintákban ne legyen szóköz: a $CLAUDE_FLAGS szavakra bomlik.
+CLAUDE_FLAGS="${CLAUDE_FLAGS:---permission-mode acceptEdits --allowedTools Bash(git:*) Bash(pytest:*) Bash(ruff:*) Bash(python:*)}"
+CODEX_FLAGS="${CODEX_FLAGS:---sandbox workspace-write}"
 
 for ((i = 1; i <= MAX; i++)); do
   echo "================ RALPH ${MODE} #${i}/${MAX}  (${AGENT}, ${BRANCH})"
