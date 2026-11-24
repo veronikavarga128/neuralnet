@@ -51,6 +51,8 @@ reprodukálhatóságot (seed) és az eszközválasztást (cuda / mps / cpu).
 | `data.num_workers` | 0 | Windows / notebook miatt |
 | `data.mean` | `[0.485, 0.456, 0.406]` | ImageNet-normalizálás |
 | `data.std` | `[0.229, 0.224, 0.225]` | ImageNet-normalizálás |
+| `data.hflip_prob` | 0.5 | csak train, kép+maszk együtt |
+| `data.color_jitter` | `[0.2, 0.2, 0.2, 0.0]` | csak train, csak kép: brightness, contrast, saturation, hue |
 | `model.in_channels` | 3 | RGB |
 | `model.base_channels` | 32 | |
 | `model.depth` | 4 | |

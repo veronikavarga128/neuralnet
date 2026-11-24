@@ -29,6 +29,8 @@ class DataConfig:
     num_workers: int
     mean: list[float]
     std: list[float]
+    hflip_prob: float
+    color_jitter: list[float]  # brightness, contrast, saturation, hue
 
 
 @dataclass
@@ -79,6 +81,13 @@ class Config:
             (d.num_workers >= 0, "data.num_workers must be >= 0"),
             (len(d.mean) == len(d.std) == m.in_channels, "data.mean/std need in_channels values"),
             (all(s > 0 for s in d.std), "data.std values must be positive"),
+            (0.0 <= d.hflip_prob <= 1.0, "data.hflip_prob must be in [0, 1]"),
+            (
+                len(d.color_jitter) == 4
+                and all(v >= 0 for v in d.color_jitter)
+                and d.color_jitter[3] <= 0.5,
+                "data.color_jitter must be 4 non-negative values, hue <= 0.5",
+            ),
             (m.num_classes >= 2, "model.num_classes must be >= 2"),
             (m.base_channels > 0 and m.depth > 0, "model.base_channels and depth must be > 0"),
             (t.epochs > 0 and t.batch_size > 0, "train.epochs and batch_size must be > 0"),
