@@ -1,7 +1,7 @@
 <!--
   AI-NAK SZÁNT FÁJL — modul-doc (a _MODULE_TEMPLATE.md alapján)
-  ÁLLAPOT: TERVEZETT — a kód még nem létezik. Amikor elkészül, a doc-keeper
-  ügynök frissíti a valós fájlnevekre és függvényekre.
+  ÁLLAPOT: RÉSZBEN KÉSZ — metrics.py implementálva, tesztekkel; evaluate.py és
+  visualize.py TERVEZETT.
 -->
 
 # evaluation — metrikák, kiértékelés, vizualizáció
@@ -15,15 +15,29 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
 
 | Fájl | Szerep |
 |------|--------|
-| `unet_pet/metrics.py` | `confusion_matrix`, `iou_per_class`, `mean_iou`, `dice_per_class`, `pixel_accuracy`, `SegmentationMeter` (akkumulál batch-enként) |
-| `unet_pet/evaluate.py` | `evaluate(model, loader, device) -> dict`, CLI |
-| `unet_pet/visualize.py` | `show_predictions`, `overlay_mask`, `plot_confusion_matrix`, `make_tb_grid` |
+| `unet_pet/metrics.py` | `confusion_matrix`, `iou_per_class`, `mean_iou`, `dice_per_class`, `mean_dice`, `pixel_accuracy`, `normalize_confusion`, `per_image_iou`, `SegmentationMeter` (akkumulál batch-enként) — KÉSZ |
+| `tests/test_metrics.py` | kézzel számolt példák (a levezetés a fájl docstringjében) |
+| `unet_pet/evaluate.py` | `evaluate(model, loader, device) -> dict`, CLI — TERVEZETT |
+| `unet_pet/visualize.py` | `show_predictions`, `overlay_mask`, `plot_confusion_matrix`, `make_tb_grid` — TERVEZETT |
 
 ## Belépési pontok
 
 - `evaluate(model, loader, device)` → `{"mIoU", "dice", "pixel_acc", "iou_per_class", "confusion_matrix", "per_image_iou"}`
 - CLI: `python -m unet_pet.evaluate --weights models/unet_pet_best.pt [--split test]`
 - `show_predictions(images, masks, preds, n=6)` → matplotlib ábra
+
+## metrics.py — konvenciók
+
+- Konfúziós mátrix: `cm[t, p]` = t valódi osztályú, p-nek jósolt pixelek száma (sor = valódi).
+- Minden függvény elfogad logitot `(B, C, H, W)` vagy címkét `(B, H, W)`.
+- `SegmentationMeter.update(preds, targets)` → `compute()` dict, sima Python értékekkel
+  (JSON-ba írható): `mIoU`, `dice` (macro), `pixel_acc`, `iou_per_class`,
+  `dice_per_class`, `confusion_matrix`, `per_image_iou`.
+- 0/0 (az osztály se nem fordul elő, se nem jósolták) → NaN, az átlagok `nanmean`-nel
+  kihagyják. Jósolt, de nem létező osztály → IoU = 0 (ez valódi hiba).
+- `normalize_confusion`: soronként normalizál (recall-nézet), üres sor → 0, nem NaN.
+- Baseline („mindig háttér”) a `sample_data/`-n: pixel acc 0,659, mIoU 0,220 → ezért a
+  pixel accuracy félrevezető, a fő metrika a mIoU.
 
 ## Mit kell kiértékelni (beadandó-követelmény)
 
