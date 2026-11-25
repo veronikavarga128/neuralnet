@@ -57,6 +57,9 @@ fő logikáját (a `unet_pet` csomag függvényeit lépésről lépésre hívja)
 - **8. fejezet:** a `models/unet_pet_history.json` + `results/test_metrics.json` (fő modell) és a
   `results/history_ce_only.json` + `results/test_metrics_ce_only.json` (CE-only) fájlokat
   olvassa; a hiányzó futást üzenettel jelzi, a meglévőket táblázatban és görbén mutatja.
+  A `results/history_ce_only.json` nem a tanítás exportja (`--no-export`), hanem a
+  `runs/<run>_ce_only/history.json` másolata, `best_epoch` és `run_id` mezővel kiegészítve
+  (a `runs/` nincs gitben). A CE-only futás: `20261125-094758_ce_only`.
 - **Abszolút útvonal** a kimenetekben sincs: a `rel()` segéd a repó gyökeréhez képest írja ki.
 - **Táblázatok** `IPython.display.Markdown`-nal (a pandas nem függőség).
 - Ábráknál a cella `plt.show()`-val zárul (különben a visszaadott `Figure` kétszer jelenne meg);
@@ -98,8 +101,10 @@ Gyors ellenőrzés: egy másolatban `EVAL_LIMIT = 200`; offline szimuláció: a 
 ## Ha új szöveg/eredmény kerül bele
 
 A markdown-cellákban néhány szám szerepel (teszt mIoU 0,737, val mIoU 0,726, 23. epoch, 7 hibás
-maszk stb.). Újratanítás után ezeket a kimenetekhez kell igazítani. A 8. fejezet értelmezése a
-CE-only futás után egészítendő ki a tényleges számokkal.
+maszk stb.). Újratanítás után ezeket a kimenetekhez kell igazítani. A 8–9. fejezet a CE-only
+összevetés számait is tartalmazza (teszt mIoU 0,737 vs. 0,735, val 0,726 vs. 0,732, border IoU
+0,501 vs. 0,485, LR-felezés a CE-only futás 14. és 21. epochjában); bármelyik futás
+megismétlése után ezeket is egyeztetni kell.
 
 <!--
 KARBANTARTÁS: ha ezt a modult módosítod a kódban, frissítsd ezt a docot
