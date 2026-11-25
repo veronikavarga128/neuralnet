@@ -107,6 +107,43 @@
       }
     ]
   },
+  "empty_pet_masks": [
+    {
+      "index": 1093,
+      "name": "Egyptian_Mau_20",
+      "iou": 0.15681966145833334
+    },
+    {
+      "index": 1690,
+      "name": "japanese_chin_199",
+      "iou": 0.11431884765625
+    },
+    {
+      "index": 1858,
+      "name": "keeshond_7",
+      "iou": 0.04010009765625
+    },
+    {
+      "index": 2292,
+      "name": "Persian_259",
+      "iou": 0.13480631510416666
+    },
+    {
+      "index": 2837,
+      "name": "saint_bernard_60",
+      "iou": 0.2936808268229167
+    },
+    {
+      "index": 2856,
+      "name": "saint_bernard_78",
+      "iou": 0.22540283203125
+    },
+    {
+      "index": 3473,
+      "name": "wheaten_terrier_195",
+      "iou": 0.29351806640625
+    }
+  ],
   "per_image_iou": {
     "names": [
       "Abyssinian_201",
@@ -7450,5 +7487,6 @@
       0.7081594345822811,
       0.7576393437840072
     ]
-  }
+  },
+  "tag": null
 }
