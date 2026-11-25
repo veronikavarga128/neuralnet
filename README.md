@@ -58,7 +58,7 @@ notebook 8. fejezetében.
 Python **3.11** kell. GPU nem szükséges, minden CPU-n is fut.
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/veronikavarga128/neuralnet.git
 cd neuralnet
 python -m venv .venv
 ```
@@ -77,10 +77,14 @@ Ha a PowerShell nem engedi a szkript futtatását, előtte:
 Utána:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
-A `requirements.txt` minden csomagot pontos verzióval rögzít.
+A `requirements.txt` minden csomagot pontos verzióval rögzít. Az `--extra-index-url` a
+PyTorch CPU-s változatát telepíti, ami minden rendszeren elég a notebookhoz. Linuxon e
+nélkül a pip a CUDA-s buildet töltené le, ami több GB-nyi NVIDIA-csomagot jelent.
+Windowson és macOS-en a kapcsoló nem változtat semmin, de nem is árt. Ha van NVIDIA GPU-d
+és azon akarsz tanítani, hagyd el a kapcsolót.
 
 ## Futtatás
 
