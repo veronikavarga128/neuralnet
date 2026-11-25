@@ -1,7 +1,8 @@
 <!--
   AI-NAK SZÁNT FÁJL — modul-doc (a _MODULE_TEMPLATE.md alapján)
-  ÁLLAPOT: TERVEZETT — a kód még nem létezik. Amikor elkészül, a doc-keeper
-  ügynök frissíti a valós fájlnevekre és függvényekre.
+  ÁLLAPOT: RÉSZBEN KÉSZ — a notebook mind a 0–10. fejezettel elkészült, limitált és offline
+  módban hibátlanul fut. Hátra: a CE-only futás eredményei (8. fejezet) és a végleges,
+  kimenetekkel mentett futtatás.
 -->
 
 # notebook — a beadandó notebook
@@ -39,6 +40,34 @@ fő logikáját (a `unet_pet` csomag függvényeit lépésről lépésre hívja)
 9. **Összegzés és korlátok** — mit tanultunk, hibák, továbbfejlesztési lehetőségek.
 10. **Reprodukálás** — pontos parancsok, verziók, seed, futásidő.
 
+## Megvalósítás
+
+- **46 cella**, a fejezetek a fenti szerkezetet követik; a kód a `unet_pet` függvényeit hívja
+  (`load_config`, `make_datasets`, `build_model`, `fit`, `load_trained_model`,
+  `run_evaluation`, `examples_figure`, `show_predictions`, `plot_history`, ...).
+- **Kapcsolók (1. fejezet):** `TRAIN = False`, `RUN_TEST_EVAL = True` (a felhasználó döntése:
+  alapból élő teszt-kiértékelés, a torchvision letölti az adatot), `EVAL_LIMIT = None`.
+- **`DATA_AVAILABLE`:** a 2. fejezet `load_base_datasets`-t try/except-be teszi. Ha nem sikerül,
+  egyértelmű üzenet; a példák és az osztályeloszlás a `sample_data/`-ból, a 6. fejezet a mentett
+  `results/test_metrics.json`-t mutatja, a 7. fejezet tesztkép-ábrái kimaradnak (üzenettel),
+  a `sample_data/` demó mindig fut.
+- **`LIVE_EVAL`** = `RUN_TEST_EVAL and DATA_AVAILABLE`; élő futásnál a `run_evaluation`
+  (`EVAL_LIMIT = None` esetén) újraírja a `results/test_metrics.json`-t — determinisztikus,
+  ezért a tartalma nem változik, és a notebook táblája garantáltan egyezik a JSON-nal.
+- **8. fejezet:** a `models/unet_pet_history.json` + `results/test_metrics.json` (fő modell) és a
+  `results/history_ce_only.json` + `results/test_metrics_ce_only.json` (CE-only) fájlokat
+  olvassa; a hiányzó futást üzenettel jelzi, a meglévőket táblázatban és görbén mutatja.
+- **Abszolút útvonal** a kimenetekben sincs: a `rel()` segéd a repó gyökeréhez képest írja ki.
+- **Táblázatok** `IPython.display.Markdown`-nal (a pandas nem függőség).
+- Ábráknál a cella `plt.show()`-val zárul (különben a visszaadott `Figure` kétszer jelenne meg);
+  `progress=False` a kiértékelésnél (a tqdm widget nem jelenik meg jól a mentett notebookban).
+- A notebook kódcelláit is ellenőrzi a `ruff check .` / `ruff format`.
+
+## Futásidők (CPU, Ryzen 7 8845HS)
+
+- `TRAIN = False`, teljes teszt-kiértékelés: kb. 5 perc (ebből a kiértékelés kb. 4 perc).
+- `EVAL_LIMIT = 200`: kb. 20 s. Offline (adathalmaz nélkül): kb. 12 s.
+
 ## Belépési pontok
 
 Fentről lefelé futtatva (`Kernel → Restart & Run All`) hibamentesen végig kell érnie.
@@ -60,9 +89,17 @@ Támaszkodik: az összes `unet_pet` modul, `models/unet_pet_best.pt`, `sample_da
 ## Hogyan teszteld
 
 ```
-jupyter nbconvert --to notebook --execute unet_pet_segmentation.ipynb --output /tmp/nb_check.ipynb
+jupyter nbconvert --to notebook --execute unet_pet_segmentation.ipynb --output nb_check.ipynb --output-dir <temp mappa>
 ```
-Majd friss venv-ben, csak `pip install -r requirements.txt` után is.
+Gyors ellenőrzés: egy másolatban `EVAL_LIMIT = 200`; offline szimuláció: a másolatban a
+`load_base_datasets(...)` sort `raise OSError(...)`-ra cserélve. Végül friss venv-ben, csak
+`pip install -r requirements.txt` után is.
+
+## Ha új szöveg/eredmény kerül bele
+
+A markdown-cellákban néhány szám szerepel (teszt mIoU 0,737, val mIoU 0,726, 23. epoch, 7 hibás
+maszk stb.). Újratanítás után ezeket a kimenetekhez kell igazítani. A 8. fejezet értelmezése a
+CE-only futás után egészítendő ki a tényleges számokkal.
 
 <!--
 KARBANTARTÁS: ha ezt a modult módosítod a kódban, frissítsd ezt a docot
