@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -57,6 +58,7 @@ from unet_pet.visualize import plot_confusion_matrix, show_predictions
 
 SPLITS = ("test", "val", "sample")
 BACKGROUND = CLASS_NAMES.index("background")
+PET = CLASS_NAMES.index("pet")
 
 
 # --------------------------------------------------------------------------------------
@@ -153,18 +155,21 @@ def evaluate(
     """Model and "always background" baseline metrics over a whole loader, in one pass.
 
     Returns:
-        ``{"model": ..., "baseline": ...}``, each a ``SegmentationMeter.compute()`` dict.
-        ``model["per_image_iou"][i]`` belongs to the ``i``-th image of the loader.
+        ``{"model": ..., "baseline": ..., "pet_pixels": [...]}``; ``model`` and ``baseline``
+        are ``SegmentationMeter.compute()`` dicts. ``model["per_image_iou"][i]`` and
+        ``pet_pixels[i]`` (pet pixels in the true mask) belong to the ``i``-th image.
     """
     model.eval()
     model_meter, baseline_meter = SegmentationMeter(num_classes), SegmentationMeter(num_classes)
+    pet_pixels: list[int] = []
     for images, masks in tqdm(loader, desc="evaluate", leave=False, disable=not progress):
         logits = model(images.to(device))
         model_meter.update(logits.float().cpu(), masks)
         baseline_meter.update(torch.full_like(masks, BACKGROUND), masks)
+        pet_pixels += (masks == PET).flatten(1).sum(dim=1).tolist()
     baseline = baseline_meter.compute()
     baseline.pop("per_image_iou")
-    return {"model": model_meter.compute(), "baseline": baseline}
+    return {"model": model_meter.compute(), "baseline": baseline, "pet_pixels": pet_pixels}
 
 
 def select_examples(per_image_iou: Sequence[float], k: int = 3) -> dict[str, list[int]]:
@@ -199,17 +204,24 @@ def _display_path(path: Path) -> str:
 
 
 def build_report(
-    results: Mapping[str, Mapping[str, Any]],
+    results: Mapping[str, Any],
     names: Sequence[str],
     *,
     split: str,
     weights: str | Path,
     k: int = 3,
 ) -> dict[str, Any]:
-    """JSON-ready summary: metrics of model and baseline, best / worst images, per image."""
+    """JSON-ready summary: metrics of model and baseline, best / worst images, per image.
+
+    ``empty_pet_masks`` lists the images whose true mask has no pet pixel at all. Every
+    image of the dataset shows a pet, so these are annotation errors: the model is
+    punished there for finding the animal (see the error analysis in the notebook).
+    """
     model = dict(results["model"])
     per_image = model.pop("per_image_iou")
     examples = select_examples(per_image, k)
+    pet_pixels = results.get("pet_pixels")
+    empty = [] if pet_pixels is None else [i for i, n in enumerate(pet_pixels) if n == 0]
     return {
         "split": split,
         "n_images": len(per_image),
@@ -221,6 +233,7 @@ def build_report(
             kind: [{"index": i, "name": names[i], "iou": per_image[i]} for i in indices]
             for kind, indices in examples.items()
         },
+        "empty_pet_masks": [{"index": i, "name": names[i], "iou": per_image[i]} for i in empty],
         "per_image_iou": {"names": list(names), "iou": list(per_image)},
     }
 
@@ -248,6 +261,10 @@ def format_report(report: Mapping[str, Any]) -> str:
     for kind in ("best", "worst"):
         items = ", ".join(f"{e['name']} ({e['iou']:.3f})" for e in report["examples"][kind])
         lines.append(f"{kind:<6} images: {items}")
+    empty = report.get("empty_pet_masks", [])
+    if empty:
+        names = ", ".join(e["name"] for e in empty[:5]) + (", ..." if len(empty) > 5 else "")
+        lines.append(f"{len(empty)} true mask(s) without any pet pixel (label errors?): {names}")
     return "\n".join(lines)
 
 
@@ -294,12 +311,14 @@ def save_figures(
     import matplotlib.pyplot as plt
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    split = report["split"]
+    split, suffix = report["split"], _suffix(report.get("tag"))
     figures = {
-        out_dir / f"{split}_confusion_matrix.png": plot_confusion_matrix(
+        out_dir / f"{split}_confusion_matrix{suffix}.png": plot_confusion_matrix(
             report["model"]["confusion_matrix"], title=f"Confusion matrix ({split})"
         ),
-        out_dir / f"{split}_best_worst.png": examples_figure(model, dataset, report, cfg, device),
+        out_dir / f"{split}_best_worst{suffix}.png": examples_figure(
+            model, dataset, report, cfg, device
+        ),
     }
     for path, fig in figures.items():
         fig.savefig(path, dpi=120, bbox_inches="tight")
@@ -312,6 +331,15 @@ def save_figures(
 # --------------------------------------------------------------------------------------
 
 
+def _suffix(tag: str | None) -> str:
+    return f"_{tag}" if tag else ""
+
+
+def metrics_path(cfg: Config, split: str = "test", tag: str | None = None) -> Path:
+    """``<results>/<split>_metrics[_<tag>].json``; the untagged one is the main result."""
+    return cfg.paths.results / f"{split}_metrics{_suffix(tag)}.json"
+
+
 def run_evaluation(
     cfg: Config,
     weights: str | Path | None = None,
@@ -320,16 +348,20 @@ def run_evaluation(
     limit: int | None = None,
     device: torch.device | None = None,
     figures: bool = False,
+    tag: str | None = None,
     download: bool = True,
     progress: bool = True,
 ) -> dict[str, Any]:
     """Evaluate ``weights`` (default: ``cfg.paths.best_weights``) on ``split``.
 
-    Writes ``<split>_metrics.json`` into ``cfg.paths.results`` unless ``limit`` is set.
+    Writes ``metrics_path(cfg, split, tag)`` unless ``limit`` is set. A ``tag`` (e.g.
+    ``"ce_only"`` for a comparison model) keeps the main ``<split>_metrics.json`` intact.
 
     Returns:
         ``{"report", "json_path" (None for limited runs), "figure_paths"}``.
     """
+    if tag is not None and not re.fullmatch(r"[A-Za-z0-9_-]+", tag):
+        raise ValueError(f"tag may only contain letters, digits, '_' and '-', got '{tag}'")
     set_seed(cfg.seed)
     device = get_device() if device is None else device
     weights = cfg.paths.best_weights if weights is None else weights
@@ -338,10 +370,11 @@ def run_evaluation(
     results = evaluate(model, make_eval_loader(cfg, dataset), device, cfg.model.num_classes,
                        progress=progress)  # fmt: skip
     report = build_report(results, image_names(dataset), split=split, weights=weights)
+    report["tag"] = tag
 
     json_path = None
     if limit is None:
-        json_path = save_report(report, cfg.paths.results / f"{split}_metrics.json")
+        json_path = save_report(report, metrics_path(cfg, split, tag))
     figure_paths = (
         save_figures(model, dataset, report, cfg, device, cfg.paths.results) if figures else []
     )
@@ -358,6 +391,9 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
         "--limit", type=positive_int, help="only the first N images (quick check; no JSON)"
     )
     parser.add_argument("--figures", action="store_true", help="save PNG figures to results/")
+    parser.add_argument(
+        "--tag", help="name of a comparison model: writes <split>_metrics_<tag>.json"
+    )
     parser.add_argument("--device", help="force a device, e.g. cpu (default: auto)")
     parser.add_argument(
         "--set", nargs="*", default=[], metavar="KEY=VALUE", help="extra config overrides"
@@ -366,7 +402,8 @@ def main(argv: Sequence[str] | None = None) -> dict[str, Any]:
 
     cfg = load_config(args.config, overrides=parse_overrides(args.set))
     out = run_evaluation(cfg, args.weights, split=args.split, limit=args.limit,
-                         device=get_device(args.device), figures=args.figures)  # fmt: skip
+                         device=get_device(args.device), figures=args.figures,
+                         tag=args.tag)  # fmt: skip
     print(format_report(out["report"]))
     if out["json_path"] is not None:
         print(f"Saved {_display_path(out['json_path'])}")

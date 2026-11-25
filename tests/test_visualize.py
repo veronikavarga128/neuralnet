@@ -106,3 +106,12 @@ def test_plot_history_skips_missing_keys() -> None:
     assert len(fig.axes) == 2  # loss + lr, no metric panel
     full = plot_history({**history, "val_mIoU": [0.5, 0.6, 0.7]})
     assert len(full.axes) == 3
+
+
+def test_plot_history_accepts_exported_history_with_extra_fields() -> None:
+    """models/unet_pet_history.json also holds best_epoch (int) and run_id (str)."""
+    history = {"train_loss": [1.0, 0.8], "val_loss": [1.1, 0.9], "val_mIoU": [0.5, 0.6],
+               "lr": [1e-3] * 2, "best_epoch": 2, "run_id": "20261124-132319_ce_dice"}  # fmt: skip
+    fig = plot_history(history)
+    assert len(fig.axes) == 3
+    assert list(fig.axes[0].lines[0].get_xdata()) == [1, 2]

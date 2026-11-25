@@ -180,14 +180,17 @@ def plot_history(history: Mapping[str, Sequence[float]]) -> Figure:
     """Training curves from the history dict written by ``train.py``.
 
     Expected keys (per-epoch lists, missing ones are skipped): ``train_loss``,
-    ``val_loss``, ``val_mIoU``, ``val_dice``, ``lr``.
+    ``val_loss``, ``val_mIoU``, ``val_dice``, ``lr``. Other entries (e.g. ``best_epoch`` and
+    ``run_id`` in the exported ``models/unet_pet_history.json``) are ignored.
     """
-    epochs = list(range(1, 1 + max((len(v) for v in history.values()), default=0)))
     panels = [
         ("loss", ["train_loss", "val_loss"]),
         ("validation metric", ["val_mIoU", "val_dice"]),
         ("learning rate", ["lr"]),
     ]
+    plotted = {k for _, keys in panels for k in keys}
+    lengths = [len(v) for k, v in history.items() if k in plotted]
+    epochs = list(range(1, 1 + max(lengths, default=0)))
     panels = [(t, [k for k in keys if k in history]) for t, keys in panels]
     panels = [(t, keys) for t, keys in panels if keys]
     fig, axes = plt.subplots(

@@ -18,6 +18,7 @@ from unet_pet.evaluate import (
     load_trained_model,
     main,
     make_eval_dataset,
+    metrics_path,
     run_evaluation,
     save_report,
     select_examples,
@@ -154,3 +155,28 @@ def test_cli_with_limit_prints_but_writes_nothing(cfg, weights: Path, capsys) ->
     assert not math.isnan(out["report"]["baseline"]["mIoU"])
     with pytest.raises(SystemExit):
         main(["--limit", "0"])
+
+
+def test_empty_pet_masks_are_reported() -> None:
+    masks = torch.ones(3, 4, 4, dtype=torch.long)  # all background ...
+    masks[1, :2] = 0  # ... except image 1, which has pet pixels
+    loader = DataLoader(TensorDataset(torch.zeros(3, 3, 4, 4), masks), batch_size=2)
+    preds = torch.zeros_like(masks)  # the "model" sees a pet everywhere
+    results = evaluate(_FixedLogits(preds), loader, torch.device("cpu"), 3, progress=False)
+    assert results["pet_pixels"] == [0, 8, 0]
+    report = build_report(results, ["a", "b", "c"], split="test", weights="w.pt")
+    assert [e["name"] for e in report["empty_pet_masks"]] == ["a", "c"]
+    assert "2 true mask(s) without any pet pixel" in format_report(report)
+
+
+def test_tag_writes_separate_json(cfg, weights: Path) -> None:
+    main_run = run_evaluation(cfg, weights, split="sample", device=torch.device("cpu"),
+                              progress=False)  # fmt: skip
+    tagged = run_evaluation(cfg, weights, split="sample", device=torch.device("cpu"),
+                            tag="ce_only", progress=False)  # fmt: skip
+    assert main_run["json_path"] == metrics_path(cfg, "sample")
+    assert tagged["json_path"] == cfg.paths.results / "sample_metrics_ce_only.json"
+    assert json.loads(tagged["json_path"].read_text(encoding="utf-8"))["tag"] == "ce_only"
+    assert main_run["json_path"].is_file()  # untouched by the tagged run
+    with pytest.raises(ValueError, match="tag"):
+        run_evaluation(cfg, weights, split="sample", tag="../x", progress=False)

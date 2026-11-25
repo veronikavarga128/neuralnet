@@ -16,20 +16,22 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
 |------|--------|
 | `unet_pet/metrics.py` | `confusion_matrix`, `iou_per_class`, `mean_iou`, `dice_per_class`, `mean_dice`, `pixel_accuracy`, `normalize_confusion`, `per_image_iou`, `SegmentationMeter` (akkumulál batch-enként) — KÉSZ |
 | `tests/test_metrics.py` | kézzel számolt példák (a levezetés a fájl docstringjében) |
-| `unet_pet/evaluate.py` | `load_trained_model`, `make_eval_dataset`, `image_names`, `evaluate`, `select_examples`, `build_report`, `format_report`, `save_report`, `examples_figure`, `save_figures`, `run_evaluation`, CLI — KÉSZ |
+| `unet_pet/evaluate.py` | `load_trained_model`, `make_eval_dataset`, `image_names`, `evaluate`, `select_examples`, `build_report`, `metrics_path`, `format_report`, `save_report`, `examples_figure`, `save_figures`, `run_evaluation`, CLI — KÉSZ |
 | `tests/test_evaluate.py` | kézzel számolt baseline, egyezés a `SegmentationMeter`-rel, best/worst NaN-kezelés, szigorú JSON, rossz architektúra hibaüzenete, CLI `--split sample --limit 2` hamis súllyal |
 | `unet_pet/visualize.py` | `mask_to_rgb`, `overlay_mask`, `show_predictions`, `make_tb_grid`, `plot_confusion_matrix`, `plot_history`, `CLASS_COLORS` — KÉSZ |
 | `tests/test_visualize.py` | ábra-tesztek hamis adaton (Agg backend a `tests/conftest.py`-ban) |
 
 ## Belépési pontok
 
-- CLI: `python -m unet_pet.evaluate [--weights models/unet_pet_best.pt] [--split test|val|sample] [--limit N] [--figures] [--device cpu] [--set KEY=VALUE ...]`
+- CLI: `python -m unet_pet.evaluate [--weights models/unet_pet_best.pt] [--split test|val|sample] [--limit N] [--figures] [--tag NAME] [--device cpu] [--set KEY=VALUE ...]`
   → metrikatábla (modell vs. baseline, osztályonként) + best/worst képek a konzolra.
-- `run_evaluation(cfg, weights=None, *, split="test", limit=None, device=None, figures=False)`
+- `run_evaluation(cfg, weights=None, *, split="test", limit=None, device=None, figures=False, tag=None)`
   → `{"report", "json_path", "figure_paths"}` — a notebook ezt hívja.
-- `evaluate(model, loader, device, num_classes)` → `{"model": ..., "baseline": ...}`, mindkettő
-  `SegmentationMeter.compute()` dict; a modellé tartalmazza a `per_image_iou`-t (a loader
-  sorrendjében), a baseline-é nem.
+- `evaluate(model, loader, device, num_classes)` → `{"model": ..., "baseline": ..., "pet_pixels": [...]}`;
+  a `model` és a `baseline` `SegmentationMeter.compute()` dict; a modellé tartalmazza a
+  `per_image_iou`-t (a loader sorrendjében), a baseline-é nem. `pet_pixels[i]` = a valódi
+  maszk pet pixeleinek száma.
+- `metrics_path(cfg, split="test", tag=None)` → `results/<split>_metrics[_<tag>].json`.
 - `select_examples(per_image_iou, k=3)` → `{"best": [...], "worst": [...]}` indexek (NaN kihagyva).
 - `examples_figure(model, dataset, report, cfg, device)` → best, majd worst sorok ábrája
   (`show_predictions`, sorcímben név + IoU).
@@ -40,7 +42,8 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
   `SummaryWriter.add_image`-hez, ugyanazzal a 4 oszloppal
 - `plot_confusion_matrix(cm, normalize=True)` → `Figure` (soronként normalizált, cellákban a számok)
 - `plot_history(history)` → `Figure`; a history **epochonkénti listák dictje**: `train_loss`,
-  `val_loss`, `val_mIoU`, `val_dice`, `lr` (a hiányzó kulcsokat kihagyja) — a `train.py`
+  `val_loss`, `val_mIoU`, `val_dice`, `lr` (a hiányzó kulcsokat kihagyja, az egyéb mezőket —
+  pl. az exportált JSON `best_epoch`, `run_id` mezőit — figyelmen kívül hagyja) — a `train.py`
   ezt a formátumot írja
 
 ## metrics.py — konvenciók
@@ -75,16 +78,25 @@ eredmények szemléltetése ábrákkal (a notebook és a bemutató számára).
 - **Kimenet:** `paths.results/<split>_metrics.json` (`results/test_metrics.json` a gitbe
   kerülő, README-ben és notebookban idézett eredmény). Tartalma: `split`, `n_images`,
   `weights`, `class_names`, `model` (metrikák + konfúziós mátrix), `baseline`, `examples`
-  (`best`/`worst`: index, név, IoU), `per_image_iou` (`names`, `iou`). Szigorú JSON: NaN → `null`.
+  (`best`/`worst`: index, név, IoU), `empty_pet_masks` (index, név, IoU), `per_image_iou`
+  (`names`, `iou`), `tag`. Szigorú JSON: NaN → `null`.
+- **`--tag NAME`:** összehasonlító modellhez (pl. `ce_only`): a kimenet
+  `results/<split>_metrics_<NAME>.json`, az ábrák `..._<NAME>.png`, így a fő
+  `test_metrics.json` érintetlen marad. A tag csak betű, szám, `_`, `-` lehet.
+- **`empty_pet_masks`:** azok a képek, amelyek valódi maszkjában egy pet pixel sincs. Minden
+  képen van kisállat, tehát ezek **annotációs hibák** (a teszt splitben 7 db, pl. keeshond_7,
+  japanese_chin_199): a modell helyesen megtalálja az állatot, mégis ~0 IoU-t kap. A hivatalos
+  eredményből NEM hagyjuk ki őket, csak a hibaelemzésben jelezzük.
 - **`--limit N`** = az első N kép (nem batch). Limitált futás **nem ír JSON-t** — ugyanaz a
   védelem, mint a `train.py` exportjánál: próbafuttatás nem írhatja felül az eredményt.
 - **`--figures`:** `results/<split>_confusion_matrix.png`, `results/<split>_best_worst.png`
   (a `.gitignore` szerint PNG nem kerül gitbe).
 - Súlybetöltés `weights_only=True`-val; ha a súlyfájl nem illik a `model.*` konfighoz,
   érthető `RuntimeError`, hiányzó fájlnál `FileNotFoundError` tanítási tippel.
-- Mérés a betanított modellel (val mIoU 0,7264, 23. epoch): `--split test --limit 160` →
-  mIoU 0,703 (baseline 0,187); a `sample`-n mIoU 0,668 (baseline 0,220). A teljes test
-  split CPU-n kb. 4 perc.
+- Mérés a betanított modellel (val mIoU 0,7264, 23. epoch): teljes test split (3669 kép)
+  mIoU 0,7371 (pet 0,813 / background 0,897 / border 0,501), baseline 0,1926; a `sample`-n
+  mIoU 0,668 (baseline 0,220). A teljes test split CPU-n kb. 4 perc; az eredmény
+  determinisztikus (két futás bitre azonos).
 
 ## Mit kell kiértékelni (beadandó-követelmény)
 
