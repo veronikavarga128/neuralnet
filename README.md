@@ -74,6 +74,12 @@ A virtuális környezet aktiválása:
 Ha a PowerShell nem engedi a szkript futtatását, előtte:
 `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 
+**Windowson rövid útvonalra tedd a projektet** (pl. `C:\neuralnet`). A Jupyter egyik
+függősége mélyen egymásba ágyazott fájlokat tartalmaz, és ha a teljes útvonal túllépi a
+Windows 260 karakteres korlátját, a `pip install` `OSError: [Errno 2] No such file or
+directory` hibával elbukik. Ha mégis ez történik, helyezd át a mappát rövidebb útvonalra,
+töröld a `.venv` mappát, és kezdd újra a telepítést.
+
 Utána:
 
 ```bash
